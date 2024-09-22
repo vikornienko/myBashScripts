@@ -5,7 +5,7 @@ echo "Enter the project name: "
 read -r project_name
 
 # Step 2: navigete to projects directoty and create project folder
-cd ../ && mkdir "$project_name" && cd "$project_name" || exit
+cd ../djangoProjects && mkdir "$project_name" && cd "$project_name" || exit
 
 # Step 3: create the virtual environment
 python3 -m venv .venv
@@ -31,3 +31,4 @@ EOF
 # TODO: add gitignore file.
 # TODO: add make file.
 # TODO: initialize repozitory
+# TODO: vs code starting
