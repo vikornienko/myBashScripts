@@ -8,8 +8,13 @@ read -r project_name
 echo "Enter directory for project: "
 read -r directory_name
 
-# Step 2: navigete to projects directoty and create project folder
-cd ../"$directory_name" && mkdir "$project_name" && cd "$project_name" || exit
+# Step 2: navigete to projects directoty and create directory (if not exist) and project folder
+if ! [ -d ./"$directory_name" ] 
+then
+echo "Directory $directory_name does not exist but will be created."
+mkdir "$directory_name"
+fi
+cd ./"$directory_name" && mkdir "$project_name" && cd "$project_name" || exit
 
 # Step 3: create the virtual environment
 python3 -m venv .venv
@@ -18,7 +23,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # Step 5: Install python packages
-pip install django pytest-playwright pytest-django
+pip install django pytest-playwright pytest-django python-dotenv 'sentry-sdk[django]'
 
 # Step 6: Initialize the Django project
 django-admin startproject "$project_name" .
