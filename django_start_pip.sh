@@ -210,5 +210,8 @@ mm:
 mig:
 	python3 manage.py migrate
 EOF
+# TODO: create requirements.txt file
+# TODO: create django applications
+# TODO: create README.md file
 # TODO: initialize repozitory
 # TODO: vs code starting
