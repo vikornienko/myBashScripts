@@ -23,7 +23,9 @@ python3 -m venv .venv
 source .venv/bin/activate
 
 # Step 5: Install python packages
-pip install django pytest-playwright pytest-django python-dotenv 'sentry-sdk[django]'
+pip install django
+# Install other pyghon packages if your project requires it. 
+pip install pytest-playwright pytest-django python-dotenv 'sentry-sdk[django]'
 
 # Step 6: Initialize the Django project
 django-admin startproject "$project_name" .
@@ -194,6 +196,19 @@ functionalTesting/swb/geckodriver
 /getinfoapp/files/
 EOF
 
-# TODO: add make file.
+# Step 9: create the makefile
+cat <<EOF >Makefile
+.PHONY: rs
+rs:
+	python3 manage.py runserver
+
+.PHONY: mm
+mm:
+	python3 manage.py makemigrations
+
+.PHONY: mig
+mig:
+	python3 manage.py migrate
+EOF
 # TODO: initialize repozitory
 # TODO: vs code starting
