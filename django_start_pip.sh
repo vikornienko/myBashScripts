@@ -1,11 +1,15 @@
 #!/bin/bash
+# shellcheck disable=SC1091
 
 # Step 1: asks user for the project name
 echo "Enter the project name: " 
 read -r project_name
 
+echo "Enter directory for project: "
+read -r directory_name
+
 # Step 2: navigete to projects directoty and create project folder
-cd ../djangoProjects && mkdir "$project_name" && cd "$project_name" || exit
+cd ../"$directory_name" && mkdir "$project_name" && cd "$project_name" || exit
 
 # Step 3: create the virtual environment
 python3 -m venv .venv
