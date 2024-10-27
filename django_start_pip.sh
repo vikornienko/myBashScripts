@@ -211,7 +211,15 @@ mig:
 	python3 manage.py migrate
 EOF
 # TODO: create requirements.txt file
+# TODO: create .env file
+# TODO: copy the key value in the settings.py file and move it to .env
+# TODO: insert a link to the key value from the .env file into the settings.py file
+# TODO: add in manage.py file code for python-dotenv settings
+# TODO: add in settings.py file code for python-dotenv settings
 # TODO: create django applications
+# TODO: add script for firs start finctional test
 # TODO: create README.md file
-# TODO: initialize repozitory
+# TODO: initialize repozitory with first commit text
 # TODO: vs code starting
+# TODO: run django built-in server using Makefile
+# TODO: run functional test for first start checking
