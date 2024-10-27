@@ -210,7 +210,8 @@ mm:
 mig:
 	python3 manage.py migrate
 EOF
-# TODO: create requirements.txt file
+# Step 10: create requirements-dev.txt file
+pip freeze > requirements-dev.txt
 # TODO: create .env file
 # TODO: copy the key value in the settings.py file and move it to .env
 # TODO: insert a link to the key value from the .env file into the settings.py file
