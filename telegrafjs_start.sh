@@ -51,11 +51,11 @@ cat <<EOF >package.json
 EOF
 # Step 3: Create a README.md file. Add the project name to it.
 cat <<EOF >README.md
-# "$project_name"
+# $project_name
 
 A repository for self-study on writing telegram bots on node.js.
 
-"$description"
+$description
 To create the bot in this repository, the following were used:
 - telegraf node.js library;
 - dotenv library for storing variables in the .env file;
