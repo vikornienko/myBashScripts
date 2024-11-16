@@ -1,5 +1,6 @@
 #!/bin/bash
 # Telegraf with CommonJS.
+# Author: Valeriy Kornienko vikornienko76@gmail.com
 # Step 1: asks user for the project name
 echo "Prepare the telegram bot token in advance - you will need to add it when running this script."
 

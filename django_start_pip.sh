@@ -1,5 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC1091
+# Author: Valeriy Kornienko vikornienko76@gmail.com
 
 # Step 1: asks user for the project name
 echo "Enter the project name: " 
