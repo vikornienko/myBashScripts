@@ -1,14 +1,14 @@
 #!/bin/bash
 # Telegraf with CommonJS.
-# Author: Valeriy Kornienko vikornienko76@gmail.com
+# Author: Valeriy Kornienko <vikornienko76@gmail.com>
 # Step 1: asks user for the project name
 echo "Prepare the telegram bot token in advance - you will need to add it when running this script."
 
 echo "Enter the project name: " 
 read -r project_name
 
-echo "Enter directory for project: "
-read -r directory_name
+# echo "Enter directory for project: "
+# read -r directory_name
 
 echo "Enter author name: "
 read -r author_name
@@ -16,14 +16,18 @@ read -r author_name
 echo "Enter description: "
 read -r description
 
-# Step 2: navigete to projects directoty and create directory (if not exist) and project folder
-if ! [ -d ./"$directory_name" ] 
+# Step 2: Create the projects directoty (if not exist) and the project structure.
+if ! [ -d ./"$project_name" ] 
 then
-echo "Directory $directory_name does not exist but will be created."
-mkdir "$directory_name"
+echo "Directory $project_name does not exist but will be created."
+mkdir "$project_name"
 fi
-cd ./"$directory_name" || exit
-# Step 2: Create a package.json file. Add the project name to it.
+cd ./"$project_name" || exit && echo "Exit from string 25."
+
+mkdir src && cd ./src || exit && echo "Exit from string 27."
+mkdir commands handlers utils middlewares models
+cd ..
+# Step 3: Create a package.json file. Add the project name to it.
 cat <<EOF >package.json
 {
   "name": "$project_name",
@@ -31,7 +35,7 @@ cat <<EOF >package.json
   "description": "$description",
   "main": "bot.js",
   "scripts": {
-    "start": "nodemon bot.js",
+    "start": "nodemon src/bot.js",
     "start:debug": "nodemon --inspect bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -43,14 +47,16 @@ cat <<EOF >package.json
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "telegraf": "^4.16.3"
+    "sqlite3": "^5.1.7",
+    "telegraf": "^4.16.3",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.7"
   }
 }
 EOF
-# Step 3: Create a README.md file. Add the project name to it.
+# Step 4: Create a README.md file. Add the project name to it.
 cat <<EOF >README.md
 # $project_name
 
@@ -60,56 +66,11 @@ $description
 To create the bot in this repository, the following were used:
 - telegraf node.js library;
 - dotenv library for storing variables in the .env file;
-- nodemon for automatically applying changes to files.
+- nodemon for automatically applying changes to files
+- sqlite3 as database;
+- winston for logging.
 EOF
 
-# Step 4: Create a bot.js file and other files. Adding code for first run.
-# Create file bot.js
-cat <<EOF >bot.js
-require('dotenv').config()
-const { Telegraf } = require('telegraf')
-const { message } = require('telegraf/filters')
-const { CommandHandler } = require('./handlers/commandHandler')
-
-const bot = new Telegraf(process.env.BOT_TOKEN)
-
-CommandHandler(bot)
-
-bot.launch()
-
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
-EOF
-# Create file buttons.js
-cat <<EOF >buttons.js
-const Telegraf = require('telegraf')
-const { Markup } = Telegraf
-
-module.exports.InlineKeyboard = {
-  buttons_start: () => {
-    return Markup.inlineKeyboard([
-      Markup.button.callback("Start", "start"),
-    ])
-  }
-EOF
-mkdir handlers && cd ./handlers || exit
-cat <<EOF >commandHandler.js
-const { InlineKeyboard } = require('../buttons')
-
-module.exports.CommandHandler = (bot) => {
-    bot.start(async (ctx) => {
-        await ctx.replyWithHTML(
-            "Привет! Я ${description}.",
-            InlineKeyboard.buttons_start()
-        )
-    });
-    bot.help(async (ctx) => {
-        ctx.reply("Send me a sticker")
-    });
-}
-EOF
-# TODO: Add a callbackHandler.js file.
 # Step 5: Request a bot token.
 echo "Enter bot token: "
 read -r token
@@ -117,11 +78,11 @@ read -r token
 cat <<EOF >.env
 BOT_TOKEN="$token"
 EOF
-# Step 7: Creating a .envexample file.
-cat <<EOF >.envexample
+# Step 7: Creating a .env.example file.
+cat <<EOF >.env.example
 BOT_TOKEN="insert_your_token_here"
 EOF
-# Step 8: Createing a .gitignore file.
+# Step 8: Create the .gitignore file.
 cat <<EOF >.gitignore
 # Logs
 logs
@@ -254,6 +215,70 @@ dist
 .yarn/install-state.gz
 .pnp.*
 EOF
+
+# Step 9: Create a bot.js file and buttons.js files. Adding code for first run.
+cd ./src || exit && echo "Exit from step 9."
+# Create file bot.js
+cat <<-'EOF' >bot.js
+require('dotenv').config();
+const { Telegraf } = require('telegraf');
+const { CommandHandler } = require('./handlers/commandHandler');
+const { CallbackHandler } = require('./handlers/callbackHandler');
+const { MessageHandler } = require('./handlers/messageHandler');
+const logger = require('./utils/logger'); // Импорт логера
+
+const bot = new Telegraf(process.env.BOT_TOKEN);
+
+CommandHandler(bot);
+CallbackHandler(bot);
+MessageHandler(bot);
+
+bot.launch()
+  .then(() => logger.info('Bot started'))
+  .catch((error) => logger.error(`Bot launch failed: ${error.message}`));
+
+// Enable graceful stop
+process.once('SIGINT', () => {
+  bot.stop('SIGINT');
+  logger.info('Bot stopped due to SIGINT');
+});
+process.once('SIGTERM', () => {
+  bot.stop('SIGTERM');
+  logger.info('Bot stopped due to SIGTERM');
+});
+EOF
+# Create file buttons.js
+cat <<EOF >buttons.js
+const Telegraf = require('telegraf')
+const { Markup } = Telegraf
+
+module.exports.InlineKeyboard = {
+  buttons_start: () => {
+    return Markup.inlineKeyboard([
+      Markup.button.callback("Start", "start"),
+    ])
+  }
+EOF
+cd ./handlers || exit
+cat <<EOF >commandHandler.js
+const { InlineKeyboard } = require('../buttons')
+
+module.exports.CommandHandler = (bot) => {
+    bot.start(async (ctx) => {
+        await ctx.replyWithHTML(
+            "Привет! Я ${description}.",
+            InlineKeyboard.buttons_start()
+        )
+    });
+    bot.help(async (ctx) => {
+        ctx.reply("Send me a sticker")
+    });
+}
+EOF
+# TODO: Add a callbackHandler.js file.
+
+# 
+
 # Step 9: Install dependencies from package.json file.
 npm i
 # Step 10: Start VSCode in project directory.
