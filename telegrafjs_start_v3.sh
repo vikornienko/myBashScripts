@@ -277,9 +277,9 @@ module.exports.CommandHandler = (bot) => {
 EOF
 # TODO: Add a callbackHandler.js file.
 
-# 
+# TODO: Add other files in project structure.
 
-# Step 9: Install dependencies from package.json file.
+# Step 10: Install dependencies from package.json file.
 npm i
-# Step 10: Start VSCode in project directory.
+# Step 11: Start VSCode in project directory.
 code .
