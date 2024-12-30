@@ -213,6 +213,51 @@ mig:
 EOF
 # Step 10: create requirements-dev.txt file
 pip freeze > requirements-dev.txt
+
+# Step 11: rewrite manage.py file.
+file_manage="manage.py"
+# delete old file
+if [ -f "$file_manage" ]; then
+    rm "$file_manage"
+	echo "$file_manage has been deleted."
+fi
+# create new manage.py file
+cat <<EOF >manage.py
+#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks."""
+import os
+import sys
+# Add settings for dotenv file.
+import dotenv
+
+
+def main():
+    """Run administrative tasks."""
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', '$project_name.settings')
+    # Add settings for dotenv.
+    if os.getenv('DJANGO_SETTINGS_MODULE'):
+        os.environ['DJANGO_SETTINGS_MODULE'] = os.getenv('DJANGO_SETTINGS_MODULE')
+    # Common djangoproject settings
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == '__main__':
+    main()
+    # Add settings for dotenv.
+    dotenv.load_dotenv(
+        os.path.join(os.path.dirname(__file__), '.env')
+    )
+EOF
+
+echo "New $file_manage has been created."
 # Step 11: create .env file. 
 cat <<EOF >.env
 
@@ -220,7 +265,6 @@ EOF
 # TODO: create .env file
 # TODO: copy the key value in the settings.py file and move it to .env
 # TODO: insert a link to the key value from the .env file into the settings.py file
-# TODO: add in manage.py file code for python-dotenv settings
 # TODO: add in settings.py file code for python-dotenv settings
 # TODO: create django applications
 # TODO: add script for firs start finctional test
