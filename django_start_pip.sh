@@ -213,6 +213,10 @@ mig:
 EOF
 # Step 10: create requirements-dev.txt file
 pip freeze > requirements-dev.txt
+# Step 11: create .env file. 
+cat <<EOF >.env
+
+EOF
 # TODO: create .env file
 # TODO: copy the key value in the settings.py file and move it to .env
 # TODO: insert a link to the key value from the .env file into the settings.py file
