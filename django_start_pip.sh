@@ -9,7 +9,7 @@ read -r project_name
 echo "Enter directory for project: "
 read -r directory_name
 
-# Step 2: navigete to projects directoty and create directory (if not exist) and project folder
+# Step 2: navigate to projects directoty and create directory (if not exist) and project folder
 if ! [ -d ./"$directory_name" ] 
 then
 echo "Directory $directory_name does not exist but will be created."
