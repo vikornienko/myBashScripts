@@ -25,9 +25,16 @@ uv init "$project_name"
 cd "$project_name" || exit && echo "The project directory was not created."
 uv venv --python "$python_version"
 
-# Step 4: Add django and create django project.
-uv add django
-uv run django-admin startproject "$project_name" .
+# Step 4: Fill README.md file.
+
+echo "Enter the project description: "
+read -r project_description
+
+{
+  echo "# $project_name"
+  echo ""
+  echo "$project_description"
+} > README.md
 
 # Step 5: Delete .gitignore and add new.
 rm -f .gitignore || exit && echo "The file .gitignore was not deleted"
@@ -188,6 +195,10 @@ functionalTesting/swb/geckodriver
 /getinfoapp/files/
 EOF
 
+# Step 4: Add django and create django project.
+uv add django
+uv run django-admin startproject "$project_name"
+
 # Step 6: create the makefile
 cat <<EOF >Makefile
 .PHONY: rs
@@ -201,6 +212,14 @@ mm:
 .PHONY: mig
 mig:
 	uv run manage.py migrate
+
+.PHONY: csu
+mig:
+	uv run manage.py createsuperuser
+
+.PHONY: sa
+mig:
+	uv run manage.py startapp
 EOF
 
 # Step 7: start server
