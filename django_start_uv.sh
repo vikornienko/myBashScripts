@@ -36,7 +36,10 @@ read -r project_description
   echo "$project_description"
 } > README.md
 
-# Step 5: Delete .gitignore and add new.
+# Step 5: Delete main.py file
+rm -f main.py || echo "The file main.py don't found."
+
+# Step 6: Delete .gitignore and add new.
 rm -f .gitignore || exit && echo "The file .gitignore was not deleted"
 
 cat <<EOF >.gitignore
@@ -195,34 +198,34 @@ functionalTesting/swb/geckodriver
 /getinfoapp/files/
 EOF
 
-# Step 4: Add django and create django project.
+# Step 7: Add django and create django project.
 uv add django
 uv run django-admin startproject "$project_name"
 
-# Step 6: create the makefile
+# Step 8: create the makefile
 cat <<EOF >Makefile
 .PHONY: rs
 rs:
-	uv run manage.py runserver
+	uv run $project_name/manage.py runserver
 
 .PHONY: mm
 mm:
-	uv run manage.py makemigrations
+	uv run $project_name/manage.py makemigrations
 
 .PHONY: mig
 mig:
-	uv run manage.py migrate
+	uv run $project_name/manage.py migrate
 
 .PHONY: csu
 mig:
-	uv run manage.py createsuperuser
+	uv run $project_name/manage.py createsuperuser
 
 .PHONY: sa
 mig:
-	uv run manage.py startapp
+	uv run $project_name/manage.py startapp
 EOF
 
-# Step 7: start server
+# Step 9: start server
 make rs
 
 
