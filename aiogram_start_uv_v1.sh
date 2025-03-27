@@ -30,9 +30,11 @@ read -r project_description
 
 # Step 5: Delete main.py file
 rm -f main.py || echo "The file main.py don't found."
+echo "The main.py file was deleted."
 
 # Step 6: Delete .gitignore and add new.
 rm -f .gitignore || exit && echo "The file .gitignore was not deleted"
+echo "The .gitignore file was deleted. Add new."
 
 cat <<EOF >.gitignore
 # Byte-compiled / optimized / DLL files
@@ -189,3 +191,30 @@ functionalTesting/swb/geckodriver
 /other_files/
 /getinfoapp/files/
 EOF
+
+# Step 7: Request the bot token.
+echo "Enter bot token: "
+read -r token
+# Step 8: Creating a .env file. Saving the bot token in it.
+# Specify IDs of several administrators separated by commas
+
+cat <<EOF >.env
+BOT_TOKEN="$token"
+ADMINS=insert_admin_telegram_id
+EOF
+# Step 9: Creating the .env.example file.
+cat <<EOF >.env.example
+BOT_TOKEN="insert_your_token_here"
+ADMINS=insert_admin_telegram_id
+EOF
+
+# Step 11: Create the makefile
+cat <<EOF >Makefile
+.PHONY: start
+start:
+    pymon bot.py
+EOF
+
+# Step 12: Installing the required libraries
+uv add aiogram aiosqlite sqlalchemy python-decouple
+uv add --dev py-mon pytest pytest-asyncio
