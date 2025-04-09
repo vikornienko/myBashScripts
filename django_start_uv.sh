@@ -19,11 +19,11 @@ read -r python_version
 # cd "$project_name" || exit
 # Step 2 v.2:
 # Create project directory and init project
-uv init "$project_name"
+uv init "$project_name" --python "$python_version"
 
 # Step 3: Create venv with the requered version of python.
 cd "$project_name" || exit && echo "The project directory was not created."
-uv venv --python "$python_version"
+uv venv 
 
 # Step 4: Fill README.md file.
 
