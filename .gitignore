@@ -2,3 +2,6 @@
 .vscode/
 .idea/
 storage.md
+
+# Cursor rules and other settings
+.cursor/
