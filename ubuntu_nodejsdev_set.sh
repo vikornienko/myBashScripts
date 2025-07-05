@@ -21,8 +21,6 @@ print_info "Обновление системы..."
 sudo apt update && sudo apt upgrade -y
 
 NODE_VERSION="16.20.2"
-ARCH="x64"
-NODE_DISTRO="node-v$NODE_VERSION-linux-$ARCH"
 
 # Проверка наличия пакета
 is_installed() {
