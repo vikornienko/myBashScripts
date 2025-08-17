@@ -1,52 +1,72 @@
-#! /bin/bash
+#!/bin/bash
 # shellcheck disable=SC1091
 # Author: Valeriy Kornienko vikornienko76@gmail.com
 
-# Step 1: asks user for the project name and python version
-echo "Enter the project name: " 
-read -r project_name
+set -e  # Exit on any error
 
-echo "Enter python version: "
-read -r python_version
+# Function to get user input with validation
+get_user_input() {
+    local prompt="$1"
+    local var_name="$2"
+    local validation_func="$3"
+    
+    while true; do
+        echo -n "$prompt: "
+        read -r input
+        
+        if [[ -n "$input" ]] && { [[ -z "$validation_func" ]] || "$validation_func" "$input"; }; then
+            eval "$var_name='$input'"
+            break
+        else
+            echo "Invalid input. Please try again."
+        fi
+    done
+}
 
-# Step 2: navigate to projects directoty and create directory (if not exist)
-# Old code.
-# if ! [ -d ./"$project_name" ] 
-# then
-# echo "Directory $project_name does not exist but will be created."
-# mkdir "$project_name"
-# fi
-# cd "$project_name" || exit
-# Step 2 v.2:
-# Create project directory and init project
-uv init "$project_name" --python "$python_version"
+# Function to validate project name
+validate_project_name() {
+    local name="$1"
+    [[ "$name" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]
+}
 
-# Step 3: Create venv with the requered version of python.
-cd "$project_name" || exit && echo "The project directory was not created."
-uv venv 
+# Function to validate Python version
+validate_python_version() {
+    local version="$1"
+    [[ "$version" =~ ^3\.[0-9]+$ ]]
+}
 
-# Step 4: Fill README.md file.
+# Function to create README.md
+create_readme() {
+    local project_name="$1"
+    local description="$2"
+    
+    cat > README.md << EOF
+# $project_name
 
-echo "Enter the project description: "
-read -r project_description
+$description
 
-{
-  echo "# $project_name"
-  echo ""
-  echo "$project_description"
-} > README.md
+## Setup
 
-# Step 5: Delete main.py file
-rm -f main.py || echo "The file main.py don't found."
+This project uses uv for dependency management.
 
-# Step 6: Delete .gitignore and add new.
-rm -f .gitignore || exit && echo "The file .gitignore was not deleted"
+## Commands
 
-cat <<EOF >.gitignore
+- \`make rs\` - Run development server
+- \`make mm\` - Make migrations
+- \`make mig\` - Apply migrations
+- \`make csu\` - Create superuser
+- \`make sa\` - Start new app
+EOF
+}
+
+# Function to create .gitignore
+create_gitignore() {
+
+    cat > .gitignore << 'EOF'
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*\$py.class
+*$py.class
 
 # C extensions
 *.so
@@ -72,8 +92,6 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -173,7 +191,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-
 # Editors
 .vscode/
 .idea/
@@ -190,42 +207,107 @@ Thumbs.db
 # pyenv
 .python-version
 
+# Project specific
 functionalTesting/geckodriver.log
-
 functionalTesting/swb/geckodriver
-
 /other_files/
 /getinfoapp/files/
 EOF
+}
 
-# Step 7: Add django and create django project.
-uv add django
-uv run django-admin startproject "$project_name"
+# Function to create Makefile
+create_makefile() {
+    local project_name="$1"
+    
+    cat > Makefile << EOF
+.PHONY: rs mm mig csu sa
 
-# Step 8: create the makefile
-cat <<EOF >Makefile
-.PHONY: rs
 rs:
 	uv run $project_name/manage.py runserver
 
-.PHONY: mm
 mm:
 	uv run $project_name/manage.py makemigrations
 
-.PHONY: mig
 mig:
 	uv run $project_name/manage.py migrate
 
-.PHONY: csu
-mig:
+csu:
 	uv run $project_name/manage.py createsuperuser
 
-.PHONY: sa
-mig:
-	uv run $project_name/manage.py startapp
+sa:
+	@echo -n "Enter app name: "; read app_name; uv run $project_name/manage.py startapp \$\$app_name
 EOF
+}
 
-# Step 9: start server
-make rs
+# Function to setup Django project
+setup_django_project() {
+    local project_name="$1"
+    
+    echo "Adding Django dependency..."
+    uv add django
+    
+    echo "Creating Django project..."
+    uv run django-admin startproject "$project_name"
+}
+
+# Function to cleanup files
+cleanup_files() {
+    echo "Cleaning up unnecessary files..."
+    rm -f main.py 2>/dev/null || true
+    rm -f .gitignore 2>/dev/null || true
+}
+
+# Main execution
+main() {
+    echo "=== Django Project Setup with UV ==="
+    echo
+    
+    # Get user input
+    get_user_input "Enter the project name" "project_name" "validate_project_name"
+    get_user_input "Enter Python version (e.g., 3.11)" "python_version" "validate_python_version"
+    get_user_input "Enter the project description" "project_description"
+    
+    echo
+    echo "Creating project '$project_name' with Python $python_version..."
+    
+    # Create and initialize project
+    uv init "$project_name" --python "$python_version"
+    cd "$project_name" || { echo "Failed to enter project directory"; exit 1; }
+    
+    # Create virtual environment
+    echo "Creating virtual environment..."
+    uv venv
+    
+    # Setup project files
+    cleanup_files
+    create_readme "$project_name" "$project_description"
+    create_gitignore
+    create_makefile "$project_name"
+    
+    # Setup Django
+    setup_django_project "$project_name"
+    
+    echo
+    echo "✅ Project '$project_name' created successfully!"
+    echo "📁 Location: $(pwd)"
+    echo
+    echo "Available commands:"
+    echo "  make rs  - Run development server"
+    echo "  make mm  - Make migrations"
+    echo "  make mig - Apply migrations"
+    echo "  make csu - Create superuser"
+    echo "  make sa  - Start new app"
+    echo
+    
+    # Ask if user wants to start the server
+    echo -n "Start development server now? (y/N): "
+    read -r start_server
+    if [[ "$start_server" =~ ^[Yy]$ ]]; then
+        make rs
+    fi
+}
+
+# Run main function
+main "$@"
 
 
