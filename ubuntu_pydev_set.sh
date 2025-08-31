@@ -2,6 +2,10 @@
 # shellcheck disable=SC1091,SC2039
 # Author: Valeriy Kornienko vikornienko76@gmail.com
 # This script is used for Node.js and Python development environment setup.
+# TODO: Сделать описание скрипта.
+# TODO: Сделать логирование в файл.
+# TODO: Сделать добавление в .bashrc скрипта для использования файлов .nvmrc
+# TODO: Добавить установку typescript.
 
 set -eu
 
