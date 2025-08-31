@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2039
 # Author: Valeriy Kornienko vikornienko76@gmail.com
 # This script is used for Node.js and Python development environment setup.
