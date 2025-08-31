@@ -125,7 +125,7 @@ main() {
     log "Installing nvm..."
     if [ ! -d "$HOME/.nvm" ]; then
         # Download and install nvm
-        curl -o- curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | sh # Use sh explicitly
+        curl -o- curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash # Use bash explicitly
 
         # Source nvm immediately
         export NVM_DIR="$HOME/.nvm"
