@@ -2,11 +2,10 @@
 set -euo pipefail
 
 # === Конфиг — проверь перед запуском ===
-XAMPP_URL="${XAMPP_URL:-https://download-url-на-актуальный-xampp-8.x.run}"  # замени на актуальную ссылку
+XAMPP_URL="${XAMPP_URL:-https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.2.12/xampp-linux-x64-8.2.12-0-installer.run}"  # замени на актуальную ссылку
 USE_PORT_8080="${USE_PORT_8080:-auto}"   # yes|no|auto — auto попробует детектить конфликт 80
-TZ_REGION="${TZ_REGION:-Asia/Yekaterinburg}"
-LOCALES_ENABLE="${LOCALES_ENABLE:-ru_RU.UTF-8 en_US.UTF-8}"
-LOCALE_DEFAULT="${LOCALE_DEFAULT:-ru_RU.UTF-8}"
+LOCALES_ENABLE="${LOCALES_ENABLE:-en_US.UTF-8}"
+LOCALE_DEFAULT="${LOCALE_DEFAULT:-en_US.UTF-8}"
 
 # === Проверки окружения ===
 if [[ ! -t 1 ]]; then
@@ -62,7 +61,7 @@ echo "Активирую unattended-upgrades..."
 sudo dpkg-reconfigure -fnoninteractive unattended-upgrades || true
 
 # === Установка XAMPP ===
-if [[ "$XAMPP_URL" == https://download-url-на-актуальный-xampp-8.x.run ]]; then
+if [[ "$XAMPP_URL" == https://sourceforge.net/projects/xampp/files/XAMPP%20Linux/8.2.12/xampp-linux-x64-8.2.12-0-installer.run ]]; then
   echo "ОШИБКА: Не задана корректная ссылка XAMPP_URL. Отредактируй переменную вверху скрипта."
   exit 1
 fi
