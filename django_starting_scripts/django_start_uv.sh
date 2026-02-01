@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
+################################################################
 # Author: Valeriy Kornienko vikornienko76@gmail.com
+# This script is used for the initial setup of a Django project.
+# Saquence of actions:
+# - prompts for the project name;
+# - prompts for the Python version;
+# - installs the virtusl environment and activate it;
+# - removes unnecessary files;
+# - add files: .gitignore, README.md, Makefile;
+# - install Django dependencies;
+# - creates the Django project;
+# - starts the development server to verifuy the installation.
+#################################################################
 
 set -e  # Exit on any error
 
