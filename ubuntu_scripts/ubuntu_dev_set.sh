@@ -112,28 +112,7 @@ install_pipx_uv() {
     return $?
 }
 
-
-
-# Main setup function
-main() {
-    log "Starting development environment setup..."
-
-
-    # Display current shell info
-    log "Current shell: $SHELL"
-    log "Available shells:"
-    cat /etc/shells
-
-    # Update system
-    log "Updating system packages..."
-    sudo apt update && sudo apt upgrade -y
-
-    install_tools
-    install_pydev
-    install_pipx_uv
-
-    
-
+install_nvm_node() {
         # 4. Install nvm and Node.js
     log "Installing nvm..."
     if [ ! -d "$HOME/.nvm" ]; then
@@ -163,8 +142,33 @@ main() {
             . "$NVM_DIR/nvm.sh"
         fi        
     fi
+    return $?
+}
+
+
+
+# Main setup function
+main() {
+    log "Starting development environment setup..."
+
+
+    # Display current shell info
+    log "Current shell: $SHELL"
+    log "Available shells:"
+    cat /etc/shells
+
+    # Update system
+    log "Updating system packages..."
+    sudo apt update && sudo apt upgrade -y
+
+    install_tools
+    install_pydev
+    install_pipx_uv
+    install_nvm_node
 
     
+
+         
     # 6. Install Docker
     log "Installing Docker..."
     if ! check_command docker; then
