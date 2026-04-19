@@ -19,7 +19,7 @@ YELLOW=$(printf '\033[1;33m')
 BLUE=$(printf '\033[0;34m')
 NC=$(printf '\033[0m') # No Color
 
-# Logging function
+# Logging functions
 log() {
     printf '[%s] %s%s%s\n' "$(date +'%Y-%m-%d %H:%M:%S')" "$BLUE" "$1" "$NC"
 }
@@ -59,20 +59,40 @@ install_package() {
     fi
 }
 
-# Function to check if running on supported OS
-check_os() {
-    if ! command -v apt >/dev/null 2>&1; then
-        log_error "This script is designed for Debian/Ubuntu systems with apt package manager"
-        exit 1
-    fi
+install_tools() {
+    # 5. Install additional development tools
+    log "Installing additional development tools..."
+    for tool in git curl wget tree htop unzip pkg-config git-lfs ca-certificates gnupg sqlite3; do
+        if ! check_command "$tool"; then
+            install_package "$tool"
+        else
+            log_success"$tool is already installed."
+        fi
+    done
+    return $?
 }
+
+install_pydev() {
+    # 1. Install Python development tools
+    log "Setting up Python development environment..."
+    # Install Python development packages
+    # Using a loop for POSIX sh compatibility instead of array
+    for package in python3-pip build-essential libssl-dev libffi-dev python3-dev python3-venv cmake openssh-server; do
+        if ! dpkg -l | grep -q "^ii  $package "; then
+            install_package "$package"
+        else
+            log_success "$package is already installed"
+        fi
+    done
+    return $?
+}
+
+
 
 # Main setup function
 main() {
     log "Starting development environment setup..."
 
-    # Check OS compatibility
-    check_os
 
     # Display current shell info
     log "Current shell: $SHELL"
@@ -83,22 +103,8 @@ main() {
     log "Updating system packages..."
     sudo apt update && sudo apt upgrade -y
 
-    # 1. Install Python development tools
-    log "Setting up Python development environment..."
-
-    if ! check_command python3; then
-        install_package python3
-    fi
-
-    # Install Python development packages
-    # Using a loop for POSIX sh compatibility instead of array
-    for package in python3-pip build-essential libssl-dev libffi-dev python3-dev python3-venv cmake openssh-server; do
-        if ! dpkg -l | grep -q "^ii  $package "; then
-            install_package "$package"
-        else
-            log_success "$package is already installed"
-        fi
-    done
+    install_tools
+    install_pydev
 
     # 2. Install pipx and uv
     log "Installing pipx..."
@@ -122,13 +128,7 @@ main() {
         pipx install uv
     fi
 
-    # 3. Install sqlite3
-    log "Installing sqlite3..."
-    if ! check_command sqlite3; then
-        install_package sqlite3
-    fi
-
-    # 4. Install nvm and Node.js
+        # 4. Install nvm and Node.js
     log "Installing nvm..."
     if [ ! -d "$HOME/.nvm" ]; then
         # Download and install nvm
@@ -158,14 +158,7 @@ main() {
         fi        
     fi
 
-    # 5. Install additional development tools
-    log "Installing additional development tools..."
-    for tool in git curl wget vim tree htop; do
-        if ! check_command "$tool"; then
-            install_package "$tool"
-        fi
-    done
-
+    
     # 6. Install Docker
     log "Installing Docker..."
     if ! check_command docker; then
