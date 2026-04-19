@@ -114,7 +114,6 @@ install_tools() {
             log_success "$tool is already installed."
         fi
     done
-    return $?
 }
 
 install_pydev() {
@@ -129,7 +128,6 @@ install_pydev() {
             log_success "$package is already installed"
         fi
     done
-    return $?
 }
 
 install_pipx_uv() {
@@ -154,7 +152,6 @@ install_pipx_uv() {
     if ! check_command uv; then
         pipx install uv
     fi
-    return $?
 }
 
 install_nvm_node() {
@@ -187,7 +184,6 @@ install_nvm_node() {
             . "$NVM_DIR/nvm.sh"
         fi        
     fi
-    return $?
 }
 
 install_docker() {
@@ -203,7 +199,6 @@ install_docker() {
     else
         log_success "Docker is already installed"
     fi
-    return $?
 }
 
 install_cvtools() {
