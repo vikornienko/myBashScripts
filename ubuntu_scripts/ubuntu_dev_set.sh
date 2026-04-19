@@ -38,6 +38,31 @@ readonly PACKAGES_TOOLS=(
     libssl-dev
     libffi-dev
 )
+
+readonly PACKAGES_CV=(
+    libglib2.0-0
+    libsm6
+    libxrender1
+    libxext6
+    libgl1-mesa-glx
+    libgstreamer1.0-dev
+    libgstreamer-plugins-base1.0-dev
+)
+
+readonly PACKAGES_PDF=(
+    libpoppler-cpp-dev
+    poppler-utils
+    ghostscript
+    libmagic1
+)
+
+readonly PACKAGES_OCR=(
+    tesseract-ocr
+    tesseract-ocr-rus
+    tesseract-ocr-eng
+    libtesseract-dev
+    libleptonica-dev
+)
 # Colors for output (using printf for POSIX compatibility)
 RED=$(printf '\033[0;31m')
 GREEN=$(printf '\033[0;32m')
@@ -180,6 +205,8 @@ install_docker() {
     fi
     return $?
 }
+
+
 
 
 # Main setup function
