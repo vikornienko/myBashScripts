@@ -10,8 +10,34 @@
 # TODO: Сделать добавление в .bashrc скрипта для использования файлов .nvmrc
 # TODO: Добавить установку typescript.
 
-set -eu
+set -uo pipefail
 
+readonly PACKAGES_PYTHON=(
+    python3-pip
+    build-essential
+    libssl-dev
+    libffi-dev
+    python3-dev
+    python3-venv
+    cmake
+    openssh-server
+    )
+
+readonly PACKAGES_TOOLS=(
+    git
+    curl
+    wget
+    tree
+    htop
+    unzip
+    pkg-config
+    git-lfs
+    ca-certificates
+    gnupg
+    sqlite3
+    libssl-dev
+    libffi-dev
+)
 # Colors for output (using printf for POSIX compatibility)
 RED=$(printf '\033[0;31m')
 GREEN=$(printf '\033[0;32m')
@@ -38,18 +64,12 @@ log_warning() {
 
 # Function to check if command exists
 check_command() {
-    if command -v "$1" >/dev/null 2>&1; then
-        log_success "$1 is already installed"
-        return 0
-    else
-        log_error "$1 is not installed"
-        return 1
-    fi
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Function to install package with error handling
 install_package() {
-    package="$1"
+    local package="$1"
     log "Installing $package..."
     if sudo apt install -y "$package"; then
         log_success "$package installed successfully"
@@ -62,11 +82,11 @@ install_package() {
 install_tools() {
     # 5. Install additional development tools
     log "Installing additional development tools..."
-    for tool in git curl wget tree htop unzip pkg-config git-lfs ca-certificates gnupg sqlite3 libssl-dev libffi-dev; do
+    for tool in "${PACKAGES_TOOLS[@]}"; do
         if ! check_command "$tool"; then
             install_package "$tool"
         else
-            log_success"$tool is already installed."
+            log_success "$tool is already installed."
         fi
     done
     return $?
@@ -77,7 +97,7 @@ install_pydev() {
     log "Setting up Python development environment..."
     # Install Python development packages
     # Using a loop for POSIX sh compatibility instead of array
-    for package in python3-pip build-essential libssl-dev libffi-dev python3-dev python3-venv cmake openssh-server; do
+    for package in "${PACKAGES_PYTHON[@]}"; do
         if ! dpkg -l | grep -q "^ii  $package "; then
             install_package "$package"
         else
