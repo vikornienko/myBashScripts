@@ -121,11 +121,11 @@ install_pydev() {
     log "Setting up Python development environment..."
     # Install Python development packages
     # Using a loop for POSIX sh compatibility instead of array
-    for package in "${PACKAGES_PYTHON[@]}"; do
-        if ! dpkg -l | grep -q "^ii  $package "; then
-            install_package "$package"
+    for py_package in "${PACKAGES_PYTHON[@]}"; do
+        if ! dpkg -l | grep -q "^ii  $py_package "; then
+            install_package "$py_package"
         else
-            log_success "$package is already installed"
+            log_success "$py_package is already installed"
         fi
     done
 }
