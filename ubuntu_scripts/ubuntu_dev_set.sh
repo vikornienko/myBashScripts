@@ -62,7 +62,7 @@ install_package() {
 install_tools() {
     # 5. Install additional development tools
     log "Installing additional development tools..."
-    for tool in git curl wget tree htop unzip pkg-config git-lfs ca-certificates gnupg sqlite3; do
+    for tool in git curl wget tree htop unzip pkg-config git-lfs ca-certificates gnupg sqlite3 libssl-dev libffi-dev; do
         if ! check_command "$tool"; then
             install_package "$tool"
         else
