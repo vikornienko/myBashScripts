@@ -87,25 +87,7 @@ install_pydev() {
     return $?
 }
 
-
-
-# Main setup function
-main() {
-    log "Starting development environment setup..."
-
-
-    # Display current shell info
-    log "Current shell: $SHELL"
-    log "Available shells:"
-    cat /etc/shells
-
-    # Update system
-    log "Updating system packages..."
-    sudo apt update && sudo apt upgrade -y
-
-    install_tools
-    install_pydev
-
+install_pipx_uv() {
     # 2. Install pipx and uv
     log "Installing pipx..."
     if ! check_command pipx; then
@@ -127,6 +109,30 @@ main() {
     if ! check_command uv; then
         pipx install uv
     fi
+    return $?
+}
+
+
+
+# Main setup function
+main() {
+    log "Starting development environment setup..."
+
+
+    # Display current shell info
+    log "Current shell: $SHELL"
+    log "Available shells:"
+    cat /etc/shells
+
+    # Update system
+    log "Updating system packages..."
+    sudo apt update && sudo apt upgrade -y
+
+    install_tools
+    install_pydev
+    install_pipx_uv
+
+    
 
         # 4. Install nvm and Node.js
     log "Installing nvm..."
