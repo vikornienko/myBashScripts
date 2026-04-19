@@ -206,8 +206,41 @@ install_docker() {
     return $?
 }
 
+install_cvtools() {
+    log "Installing CV tools..."
+    for tool in "${PACKAGES_CV[@]}"; do
+        if ! check_command "$tool"; then
+            install_package "$tool"
+        else
+            log_success "$tool is already installed."
+        fi
+    done
+}
 
+install_pdftools() {
+    log "Installing PDF tools..."
+    for tool in "${PACKAGES_PDF[@]}"; do
+        if ! check_command "$tool"; then
+            install_package "$tool"
+        else
+            log_success "$tool is already installed."
+        fi
+    done
+}
 
+install_cuda() {
+    log "Installing CUDA..."
+    if ! check_command nvcc; then
+        sudo apt install -y linux-headers-$(uname -r)
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt update
+        sudo apt install -y cuda-toolkit
+        log_success "CUDA toolkit installed successfully"
+        log_warning "CUDA don't installed"
+    else
+        log_success "cuda-toolkit already installed."
+}
 
 # Main setup function
 main() {
@@ -227,7 +260,10 @@ main() {
     install_pydev
     install_pipx_uv
     install_nvm_node
-    install_docker    
+    install_docker
+    install_cvtools
+    install_pdftools
+    install_cuda    
 
          
     # 7. Install CUDA
