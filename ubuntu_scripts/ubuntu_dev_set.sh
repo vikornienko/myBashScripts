@@ -145,6 +145,21 @@ install_nvm_node() {
     return $?
 }
 
+install_docker() {
+    # 6. Install Docker
+    log "Installing Docker..."
+    if ! check_command docker; then
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sudo sh get-docker.sh
+        sudo usermod -aG docker "$USER"
+        rm get-docker.sh
+        log_success "Docker installed successfully"
+        log_warning "Please log out and log back in for Docker group changes to take effect"
+    else
+        log_success "Docker is already installed"
+    fi
+    return $?
+}
 
 
 # Main setup function
@@ -165,23 +180,9 @@ main() {
     install_pydev
     install_pipx_uv
     install_nvm_node
-
-    
+    install_docker    
 
          
-    # 6. Install Docker
-    log "Installing Docker..."
-    if ! check_command docker; then
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sudo sh get-docker.sh
-        sudo usermod -aG docker "$USER"
-        rm get-docker.sh
-        log_success "Docker installed successfully"
-        log_warning "Please log out and log back in for Docker group changes to take effect"
-    else
-        log_success "Docker is already installed"
-    fi
-
     # 7. Install CUDA
     log "Installing CUDA..."
     if ! check_command nvcc; then
