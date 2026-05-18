@@ -115,6 +115,14 @@ setup_venv() {
     fi
 }
 
+# Добавляем зависимости
+install_dependencies() {
+    print_step "Шаг 6: установка зависимостей проекта."
+
+    uv add fastapi uvicorn
+    print_success "FastAPI + uvicorn утсановлены."
+}
+
 # Главная функция
 main() {
     echo ""
@@ -130,7 +138,7 @@ main() {
     pin_python_version
     init_uv_project
     setup_venv
-    # install_dependencies
+    install_dependencies
     # create_readme
     # create_gitignore
     # create_src
