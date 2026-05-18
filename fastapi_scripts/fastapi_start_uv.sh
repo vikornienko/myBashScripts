@@ -80,6 +80,41 @@ setup_directory() {
     print_success "Директория проекта: $(pwd)"
 }
 
+# Закрепление версии Python
+pin_python_version() {
+    print_step "Закрепляем версию python."
+
+    if [[ ! -f ".python-version" ]]; then
+        uv python pin "$PYTHON_VERSION"
+        print_success "Python $PYTHON_VERSION закреплен для проекта."
+    else
+        print_warn "Директория уже содержит файл .python-version!"
+    fi
+}
+
+# Инициализация проекта с использованием uv
+init_uv_project() {
+    print_step "Шаг 4: инициализация проекта."
+
+    if [[ ! -f "pyproject.toml" ]]; then
+        uv init . --bare
+        print_success "Файл pyproject.toml создан в текущей директории."
+    else
+        print_warn "Файл pyproject.toml уже существует!"
+    fi
+}
+
+setup_venv() {
+    print_step "Шаг 5: создание виртуального окружения."
+
+    if [[ ! -d ".venv" ]]; then
+        uv venv
+        print_success "Виртуальное окружение создано."
+    else 
+        print_warn "Виртуальное окружение уже существует."
+    fi
+}
+
 # Главная функция
 main() {
     echo ""
@@ -92,9 +127,9 @@ main() {
     check_uv
     ask_project_info
     setup_directory
-    # pin_python_version
-    # init_uv_project
-    # setup_venv
+    pin_python_version
+    init_uv_project
+    setup_venv
     # install_dependencies
     # create_readme
     # create_gitignore
