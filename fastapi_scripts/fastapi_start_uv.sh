@@ -27,6 +27,18 @@ print_error()   { echo -e "${RED}[ERROR]${NC} $1" >&2; }
 print_warn()    { echo -e "${YELLOW}[WARN]${NC}  $1"; }
 print_step()    { echo -e "\n${CYAN}${BOLD}▶ $1${NC}"; }
 
+# Проверка установки менеджера пакетов uv
+check_uv() {
+    print_step "Шаг 0: проверка установки менеджера пакетов uv"
+    
+    if ! command -v uv &>/dev/null; then
+        print_error "Менеджер пакетов uv не найден, работа скрипта прекращается!"
+        exit 1
+    else
+        print_info "Начинаем настройку проекта."
+    fi
+}
+
 # Запрос информации о проекте
 ask_project_info() {
     print_step "Шаг 1: Сбор информации о проекте"
@@ -77,6 +89,7 @@ main() {
     echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
+    check_uv
     ask_project_info
     setup_directory
     # pin_python_version
