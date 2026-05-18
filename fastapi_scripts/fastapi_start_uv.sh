@@ -123,6 +123,40 @@ install_dependencies() {
     print_success "FastAPI + uvicorn утсановлены."
 }
 
+# Создаем в проекте файл README.md
+create_readme() {
+    print_step "Шаг 7: создание файла README.md"
+
+    cat > README.md << EOF
+# $PROJECT_NAME
+
+$PROJECT_DESCRIPTION
+
+## Быстрый старт
+
+\`\`\`bash
+# Запуск сервера разработки
+uv run src/main.py
+\`\`\`
+
+## Зависимости
+
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Uvicorn](https://www.uvicorn.org/)
+
+## Структура проекта
+
+\`\`\`
+.
+├── src/
+│   └── main.py          # Точка входа
+├── pyproject.toml       # Конфигурация проекта
+├── README.md            # Описание проекта
+└── .gitignore           # Исключения Git
+\`\`\`
+EOF
+    print_success "README.md создан."
+}
 # Главная функция
 main() {
     echo ""
