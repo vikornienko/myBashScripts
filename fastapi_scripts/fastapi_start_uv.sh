@@ -317,6 +317,61 @@ EOF
     print_success "Файл .gitignore создан."
 }
 
+# Создание директории /src и файла main.py
+create_src() {
+    print_step "Шаг 9: Создание стартового кода"
+
+    mkdir -p src
+
+    cat > src/main.py << 'PYEOF'
+from fastapi import FastAPI
+
+app = FastAPI(
+    title="My FastAPI App",
+    description="Автоматически сгенерированный стартовый проект",
+    version="0.1.0",
+)
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello, World"}
+
+
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+    )
+PYEOF
+
+    print_success "src/main.py создан (Hello World + /health)"
+}
+
+# Тестовый запуск проекта.
+start_project() {
+    print_step "Шаг 10: Запуск проекта"
+
+    echo ""
+    print_info "Сервер будет доступен по адресу:"
+    echo -e "  ${GREEN}→ http://localhost:8000${NC}         (основной endpoint)"
+    echo -e "  ${GREEN}→ http://localhost:8000/docs${NC}     (Swagger UI)"
+    echo -e "  ${GREEN}→ http://localhost:8000/health${NC}   (health check)"
+    echo ""
+    print_warn "Для остановки нажмите Ctrl+C"
+    echo ""
+
+    uv run src/main.py
+}
+
 # Главная функция
 main() {
     echo ""
@@ -333,10 +388,10 @@ main() {
     init_uv_project
     setup_venv
     install_dependencies
-    # create_readme
-    # create_gitignore
-    # create_src
-    # start_project
+    create_readme
+    create_gitignore
+    create_src
+    start_project
 }
 
 main "$@"
