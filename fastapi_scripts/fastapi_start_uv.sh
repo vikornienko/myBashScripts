@@ -162,7 +162,7 @@ EOF
 create_gitignore() {
     print_step "Шаг 8: создание .gitignore."
 
-    cat > .gitignore << EOF
+    cat > .gitignore << 'EOF'
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
