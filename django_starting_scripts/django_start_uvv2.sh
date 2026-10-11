@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC1091
 ################################################################
-# Author: Valeriy Kornienko vikornienko76@gmail.com
+# Author: Valerij Kornienko vikornienko76@gmail.com
 # Version: 2.0.0.
 # This script is used for the initial setup of a Django project.
 # Saquence of actions:
@@ -9,7 +9,7 @@
 # - prompts for the Python version;
 # - installs the virtuals environment and activate it;
 # - removes unnecessary files;
-# - add files: .gitignore, README.md, Makefile;
+# - add files: .gitignore, README.md, Makefile, ruff.toml;
 # - install Django dependencies;
 # - creates the Django project;
 # - starts the development server to verifuy the installation.
@@ -67,7 +67,7 @@ ask_project_info() {
 
     # Описание для README
     read -rp "Введите краткое описание проекта: " PROJECT_DESCRIPTION
-    PROJECT_DESCRIPTION="${PROJECT_DESCRIPTION:-Учебный проект на FastAPI}"
+    PROJECT_DESCRIPTION="${PROJECT_DESCRIPTION:-Учебный проект на Django}"
 
     print_success "Проект: '$PROJECT_NAME' | Python: $PYTHON_VERSION"
 }
@@ -128,7 +128,6 @@ setup_venv() {
 
 
 # Function to create README.md
-# TODO: переделать Make на Just
 create_readme() {
     print_step "Шаг 6: создание файла README.md"
         
@@ -312,7 +311,7 @@ EOF
 # Function to create Makefile
 # TODO: переделать Make на Just
 create_makefile() {
-    local project_name="$1"
+    local project_name="$PROJECT_NAME"
     
     cat > Makefile << EOF
 .PHONY: rs mm mig csu sa
@@ -334,76 +333,139 @@ sa:
 EOF
 }
 
+# Function to creat the ruff.toml file
+create_rufftomlfile() {
+    cat > ruff.toml << EOF
+    # ---------- Общие настройки ----------
+target-version = "py312"
+line-length = 88
+
+extend-exclude = [
+    "*/migrations/*",
+    ".venv",
+    "venv",
+    "staticfiles",
+    "media",
+]
+
+# ---------- Линтер ----------
+[lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "C90",   # mccabe: контроль цикломатической сложности функций
+    "T20",   # flake8-print: запрет print()/pprint() — только logging
+    "PERF",  # Perflint: очевидные проблемы производительности
+    "SIM",  # flake8-simplify
+    "PT",   # flake8-pytest-style
+    "DJ",   # flake8-django
+    "S",    # flake8-bandit — проверка безопасности
+    "RUF",  # собственные правила Ruff
+]
+
+ignore = [
+    "DJ001",  # null=True на CharField/TextField
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[lint.per-file-ignores]
+# settings.py: допустимы "звёздочные" импорты и длинные строки конфигов,
+# а также hardcoded SECRET_KEY в примере/дев-настройках
+"*/settings/*.py" = ["E501", "F403", "F405", "S105", "S106"]
+
+# В тестах: assert — обычная практика pytest, hardcoded-пароли для фикстур — ок
+"tests/*.py" = ["S101", "S105", "S106", "S608", "PLR2004"]
+"*/test_*.py" = ["S101", "S105", "S106"]
+"conftest.py" = ["S101"]
+
+"*/migrations/*.py" = ["E501", "N806"]
+
+[lint.isort]
+known-first-party = ["myapp"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "django",
+    "first-party",
+    "local-folder",
+]
+
+[lint.isort.sections]
+django = ["django"]
+
+[lint.pep8-naming]
+classmethod-decorators = ["classmethod", "django.utils.decorators.classproperty"]
+
+# ---------- Настройка flake8-bandit (правила S) ----------
+[lint.flake8-bandit]
+# Разрешённые для использования без предупреждения функции хеширования
+# (например, если где-то нужен md5 не для паролей, а для чек-сумм файлов)
+hash-builtin-functions = []
+
+# Если в коде используете subprocess/os.system — можно разрешить
+# конкретные "безопасные" случаи через noqa с указанием кода, а не глобально
+
+# ---------- Форматтер ----------
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
+docstring-code-format = true
+EOF
+}
+
 # Function to setup Django project
-# TODO: переписать функцию в связи с новыми переменными
+# TODO: Добавить в функцию код для установки зависимостей
 setup_django_project() {
-    local project_name="$1"
+    local project_name="$PROJECT_NAME"
     
     echo "Adding Django dependency..."
-    uv add django
+    uv add django django-environ
     
     echo "Creating Django project..."
     uv run django-admin startproject "$project_name"
 }
 
 # TODO: Добавить создание документов для проекта
-# TODO: Добавить файл настройки ruff
 # TODO: Добавить файл настройки тайп чеккера
 # TODO: Добавить файл настройки pre-commit
 # TODO: Добавить директорию для тестов
 # TODO: Добавить функцию для установки зависимостей
+# TODO: Добавить функцию для старта сервера для проверки правильности установки
 # Main execution
 # TODO: переписать функцию в связи с новыми функциями и переменными
 main() {
-    echo "=== Django Project Setup with UV ==="
-    echo
-    
-    # Get user input
-    get_user_input "Enter the project name" "project_name" "validate_project_name"
-    get_user_input "Enter Python version (e.g., 3.11)" "python_version" "validate_python_version"
-    get_user_input "Enter the project description" "project_description"
-    
-    echo
-    echo "Creating project '$project_name' with Python $python_version..."
-    
-    # Create and initialize project
-    uv init "$project_name" --python "$python_version"
-    cd "$project_name" || { echo "Failed to enter project directory"; exit 1; }
-    
-    # Create virtual environment
-    echo "Creating virtual environment..."
-    uv venv
-    
-    # Setup project files
-    cleanup_files
-    create_readme "$project_name" "$project_description"
+    echo ""
+    echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}${BOLD}║     Django Project Bootstrap Script                          ║${NC}"
+    echo -e "${CYAN}${BOLD}║     Ubuntu 24.04 | WSL2 | UV | Django                        ║${NC}"
+    echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+
+    check_uv
+    ask_project_info
+    setup_directory
+    pin_python_version
+    init_uv_project
+    setup_venv
+    create_readme
     create_gitignore
-    create_makefile "$project_name"
-    
-    # Setup Django
-    setup_django_project "$project_name"
-    
-    echo
-    echo "✅ Project '$project_name' created successfully!"
-    echo "📁 Location: $(pwd)"
-    echo
-    echo "Available commands:"
-    echo "  make rs  - Run development server"
-    echo "  make mm  - Make migrations"
-    echo "  make mig - Apply migrations"
-    echo "  make csu - Create superuser"
-    echo "  make sa  - Start new app"
-    echo
-    
-    # Ask if user wants to start the server
-    echo -n "Start development server now? (y/N): "
-    read -r start_server
-    if [[ "$start_server" =~ ^[Yy]$ ]]; then
-        make rs
-    fi
+    create_makefile
+    create_rufftomlfile
+    setup_django_project
+    start_project    
 }
 
 # Run main function
 main "$@"
-
-
