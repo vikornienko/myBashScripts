@@ -314,7 +314,7 @@ create_makefile() {
     local project_name="$PROJECT_NAME"
     
     cat > Makefile << EOF
-.PHONY: rs mm mig csu sa
+.PHONY: rs mm mig csu sa rc rcf rf rfc rm
 
 rs:
 	uv run $project_name/manage.py runserver
@@ -330,6 +330,21 @@ csu:
 
 sa:
 	@echo -n "Enter app name: "; read app_name; uv run $project_name/manage.py startapp \$\$app_name
+
+rc:
+    uv run ruff check .
+
+rcf:
+    uv run ruff check . --fix
+
+rf:
+    uv run ruff format .
+
+rfc:
+    uv run ruff format --check .
+
+rm:
+    uv run mypy --config-file mypy.ini
 EOF
 }
 
@@ -337,15 +352,24 @@ EOF
 create_rufftomlfile() {
     cat > ruff.toml << EOF
     # ---------- Общие настройки ----------
-target-version = "py312"
+target-version = "py313"
 line-length = 88
 
+# Корни исходного кода.
+# Нужно в основном для правильного определения first-party импортов.
+# Если у вас исходники лежат в директории `src`, укажите ["src"].
+src = ["$PROJECT_NAME"]
+
 extend-exclude = [
-    "*/migrations/*",
+    ".git",
     ".venv",
-    "venv",
-    "staticfiles",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "htmlcov",
     "media",
+    "static",
+    "**/migrations",
 ]
 
 # ---------- Линтер ----------
@@ -363,11 +387,16 @@ select = [
     "C90",   # mccabe: контроль цикломатической сложности функций
     "T20",   # flake8-print: запрет print()/pprint() — только logging
     "PERF",  # Perflint: очевидные проблемы производительности
+    "ARG",  # flake8-unused-arguments
     "SIM",  # flake8-simplify
     "PT",   # flake8-pytest-style
     "DJ",   # flake8-django
     "S",    # flake8-bandit — проверка безопасности
     "RUF",  # собственные правила Ruff
+    # Подмножество pylint без самых шумных правил.
+    "PLC",
+    "PLE",
+    "PLW",
 ]
 
 ignore = [
@@ -390,7 +419,7 @@ unfixable = []
 "*/migrations/*.py" = ["E501", "N806"]
 
 [lint.isort]
-known-first-party = ["myapp"]
+known-first-party = ["$PROJECT_NAME"]
 section-order = [
     "future",
     "standard-library",
@@ -425,6 +454,63 @@ docstring-code-format = true
 EOF
 }
 
+# Function to create mypy.ini file
+create_mypyini() {
+    cat > mypy.ini << EOF
+    [mypy]
+python_version = 3.13
+strict = true
+plugins = mypy_django_plugin.main
+
+# Путь к модулю настроек Django — обязателен для плагина
+# (можно вынести в переменную окружения DJANGO_SETTINGS_MODULE)
+
+mypy_path = "$PROJECT_NAME"
+
+# Базовая строгость — хороший баланс для учебного проекта
+check_untyped_defs = true
+disallow_untyped_defs = false        # пока не требуем типизировать абсолютно всё
+disallow_incomplete_defs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unused_configs = true
+warn_return_any = true
+no_implicit_optional = true
+strict_equality = true
+show_error_codes = true
+show_error_context = true
+show_column_numbers = true
+pretty = true
+
+# Игнорируем отсутствие типов у некоторых пакетов
+ignore_missing_imports = false
+
+# Не проверяем автогенерированные миграции
+exclude = (?x)(^\.git/ | ^\.venv/ | ^\.mypy_cache/ | ^\.pytest_cache/ | ^\.ruff_cache/ | ^htmlcov/ | ^build/ | ^dist/ | ^migrations/ | ^.*/migrations/)
+
+[mypy.plugins.django-stubs]
+django_settings_module = "$PROJECT_NAME.settings"
+# замените "config.settings" на реальный путь к вашему settings.py
+
+# ---------- Исключения для сторонних библиотек без типов ----------
+[mypy-playwright.*]
+ignore_missing_imports = true
+
+[mypy-pytest_django.*]
+ignore_missing_imports = true
+
+# ---------- Отдельные модули внутри проекта ----------
+# В тестах можно быть менее строгим
+[mypy-tests.*]
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# В миграциях вообще не проверяем типы (на случай если exclude не сработает)
+[mypy-*.migrations.*]
+ignore_errors = true
+EOF
+}
+
 # Function to setup Django project
 # TODO: Добавить в функцию код для установки зависимостей
 setup_django_project() {
@@ -432,13 +518,13 @@ setup_django_project() {
     
     echo "Adding Django dependency..."
     uv add django django-environ
+    uv add --dev mypy django-stubs django-stubs-ext ruff pytest pytest-django pytest-cov django-debug-toolbar
     
     echo "Creating Django project..."
     uv run django-admin startproject "$project_name"
 }
 
 # TODO: Добавить создание документов для проекта
-# TODO: Добавить файл настройки тайп чеккера
 # TODO: Добавить файл настройки pre-commit
 # TODO: Добавить директорию для тестов
 # TODO: Добавить функцию для установки зависимостей
@@ -463,6 +549,7 @@ main() {
     create_gitignore
     create_makefile
     create_rufftomlfile
+    create_mypyinifile
     setup_django_project
     start_project    
 }
