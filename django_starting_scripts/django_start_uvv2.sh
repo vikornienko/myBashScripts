@@ -485,57 +485,53 @@ EOF
 # Function to create mypy.ini file
 create_mypyini() {
     cat > mypy.ini << EOF
-    [mypy]
+[mypy]
 python_version = 3.13
 strict = true
 plugins = mypy_django_plugin.main
 
 # Путь к модулю настроек Django — обязателен для плагина
-# (можно вынести в переменную окружения DJANGO_SETTINGS_MODULE)
+mypy_path = $PROJECT_NAME
 
-mypy_path = "$PROJECT_NAME"
+# Файлы для проверки по умолчанию
+files = .
 
-# Базовая строгость — хороший баланс для учебного проекта
-check_untyped_defs = true
-disallow_untyped_defs = false        # пока не требуем типизировать абсолютно всё
-disallow_incomplete_defs = true
-warn_redundant_casts = true
-warn_unused_ignores = true
 warn_unused_configs = true
-warn_return_any = true
-no_implicit_optional = true
-strict_equality = true
-show_error_codes = true
+explicit_package_bases = true
 show_error_context = true
 show_column_numbers = true
 pretty = true
 
-# Игнорируем отсутствие типов у некоторых пакетов
-ignore_missing_imports = false
-
 # Не проверяем автогенерированные миграции
 exclude = (?x)(^\.git/ | ^\.venv/ | ^\.mypy_cache/ | ^\.pytest_cache/ | ^\.ruff_cache/ | ^htmlcov/ | ^build/ | ^dist/ | ^migrations/ | ^.*/migrations/)
 
-[mypy.plugins.django-stubs]
-django_settings_module = "$PROJECT_NAME.settings"
-# замените "config.settings" на реальный путь к вашему settings.py
+# Игнорируем отсутствие типов у некоторых пакетов
+ignore_missing_imports = false
 
-# ---------- Исключения для сторонних библиотек без типов ----------
+[mypy.plugins.django-stubs]
+django_settings_module = $PROJECT_NAME.settings
+
 [mypy-playwright.*]
 ignore_missing_imports = true
 
 [mypy-pytest_django.*]
 ignore_missing_imports = true
 
-# ---------- Отдельные модули внутри проекта ----------
 # В тестах можно быть менее строгим
 [mypy-tests.*]
 disallow_untyped_defs = false
 check_untyped_defs = false
 
-# В миграциях вообще не проверяем типы (на случай если exclude не сработает)
+# В миграциях вообще не проверяем типы
 [mypy-*.migrations.*]
 ignore_errors = true
+
+[mypy-environ.*]
+ignore_missing_imports = true
+
+[mypy-manage]
+ignore_errors = true
+
 EOF
 }
 
