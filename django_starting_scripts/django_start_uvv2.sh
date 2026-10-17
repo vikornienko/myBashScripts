@@ -314,10 +314,12 @@ create_makefile() {
     local project_name="$PROJECT_NAME"
     
     cat > Makefile << EOF
+SHELL := /bin/bash
+
 .PHONY: rs mm mig csu sa rc rcf rf rfc rm
 
 rs:
-	uv run $project_name/manage.py runserver
+	uv run $projet_name/manage.py runserver
 
 mm:
 	uv run $project_name/manage.py makemigrations
@@ -329,22 +331,23 @@ csu:
 	uv run $project_name/manage.py createsuperuser
 
 sa:
-	@echo -n "Enter app name: "; read app_name; uv run $project_name/manage.py startapp \$\$app_name
+	@echo -n "Enter app name: "; read app_name; uv run djcodebot/manage.py startapp $$app_name
 
 rc:
-    uv run ruff check .
+	uv run ruff check .
 
 rcf:
-    uv run ruff check . --fix
+	uv run ruff check . --fix
 
 rf:
-    uv run ruff format .
+	uv run ruff format .
 
 rfc:
-    uv run ruff format --check .
+	uv run ruff format --check .
 
 rm:
-    uv run mypy --config-file mypy.ini
+	uv run mypy --config-file mypy.ini
+
 EOF
 }
 
@@ -357,7 +360,6 @@ line-length = 88
 
 # Корни исходного кода.
 # Нужно в основном для правильного определения first-party импортов.
-# Если у вас исходники лежат в директории `src`, укажите ["src"].
 src = ["$PROJECT_NAME"]
 
 extend-exclude = [
@@ -583,7 +585,8 @@ setup_django_project() {
     echo "Adding Django dependency..."
     uv add django django-environ
     uv add --dev mypy django-stubs django-stubs-ext ruff pytest pytest-django pytest-cov django-debug-toolbar pre-commit
-    uv run pre-commit install
+    # TODO: инициировать pre-commit после создания git репозитория в папке проекта.
+    # uv run pre-commit install
     
     echo "Creating Django project..."
     uv run django-admin startproject "$project_name"
@@ -617,7 +620,7 @@ main() {
     create_gitignore
     create_makefile
     create_rufftomlfile
-    create_mypyinifile
+    create_mypyini
     create_precommit
     setup_django_project
     start_project    
