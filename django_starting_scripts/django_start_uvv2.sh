@@ -447,7 +447,7 @@ unfixable = []
 "manage.py" = ["PLC0415", "TRY003"]
 
 [lint.isort]
-known-first-party = ["djcodebot"]
+known-first-party = ["$PROJECT_NAME"]
 section-order = [
     "future",
     "standard-library",
