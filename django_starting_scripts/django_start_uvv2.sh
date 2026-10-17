@@ -130,17 +130,28 @@ setup_venv() {
 # Function to create README.md
 create_readme() {
     print_step "Шаг 6: создание файла README.md"
-        
-    cat > README.md << 'EOF'
-# $PROJECT_NAME
 
-$PROJECT_DESCRIPTION
+    local project_name="$PROJECT_NAME"
+    local description="$PROJECT_DESCRIPTION"
+        
+    cat > README.md << EOF
+# $project_name
+
+$description
 
 ## Setup
 
 This project uses uv for dependency management.
 
-## Commands
+## Configure the Git repository
+
+git init --initial-branch=main --object-format=sha1
+uv run pre-commit install
+git add .
+git commit -m "Initial commit"
+
+
+## Commands from Makefile
 
 - \`make rs\` - Run development server
 - \`make mm\` - Make migrations
@@ -316,7 +327,7 @@ create_makefile() {
     cat > Makefile << EOF
 SHELL := /bin/bash
 
-.PHONY: rs mm mig csu sa rc rcf rf rfc rm
+.PHONY: rs mm mig csu sa rc rcf rf rfc rm rpc
 
 rs:
 	uv run $projet_name/manage.py runserver
@@ -331,7 +342,7 @@ csu:
 	uv run $project_name/manage.py createsuperuser
 
 sa:
-	@echo -n "Enter app name: "; read app_name; uv run djcodebot/manage.py startapp $$app_name
+	@echo -n "Enter app name: "; read app_name; uv run $project_name/manage.py startapp $$app_name
 
 rc:
 	uv run ruff check .
@@ -347,6 +358,9 @@ rfc:
 
 rm:
 	uv run mypy --config-file mypy.ini
+
+rpc:
+	uv run pre-commit run
 
 EOF
 }
