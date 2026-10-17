@@ -360,7 +360,7 @@ line-length = 88
 
 # Корни исходного кода.
 # Нужно в основном для правильного определения first-party импортов.
-src = ["$PROJECT_NAME"]
+src = ["."]
 
 extend-exclude = [
     ".git",
@@ -372,37 +372,51 @@ extend-exclude = [
     "media",
     "static",
     "**/migrations",
+    "locale",
+    "node_modules",
+    "build",
+    "dist",
+    "*.egg-info",
+    ".tox",
+    ".env",
+    "venv",
 ]
 
 # ---------- Линтер ----------
 [lint]
 select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes
-    "I",    # isort
-    "N",    # pep8-naming
-    "UP",   # pyupgrade
-    "B",    # flake8-bugbear
-    "A",    # flake8-builtins
-    "C4",   # flake8-comprehensions
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "UP",    # pyupgrade
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
+    "C4",    # flake8-comprehensions
     "C90",   # mccabe: контроль цикломатической сложности функций
     "T20",   # flake8-print: запрет print()/pprint() — только logging
     "PERF",  # Perflint: очевидные проблемы производительности
-    "ARG",  # flake8-unused-arguments
-    "SIM",  # flake8-simplify
-    "PT",   # flake8-pytest-style
-    "DJ",   # flake8-django
-    "S",    # flake8-bandit — проверка безопасности
-    "RUF",  # собственные правила Ruff
-    # Подмножество pylint без самых шумных правил.
-    "PLC",
-    "PLE",
-    "PLW",
+    "ARG",   # flake8-unused-arguments
+    "SIM",   # flake8-simplify
+    "PT",    # flake8-pytest-style
+    "DJ",    # flake8-django
+    "S",     # flake8-bandit — проверка безопасности
+    "RUF",   # собственные правила Ruff
+    "PLC",   # pylint conventions
+    "PLE",   # pylint errors
+    "PLW",   # pylint warnings
+    # Дополнительные полезные правила:
+    "PTH",   # использовать pathlib вместо os.path
+    "TRY",   # лучшие практики работы с исключениями
+    "LOG",   # корректное использование логирования
+    "G",     # форматирование сообщений логов
+    "FA",    # современные аннотации типов
+    "FURB",  # современные идиомы Python
 ]
 
 ignore = [
-    "DJ001",  # null=True на CharField/TextField
+    "DJ001",  # null=True на CharField/TextField — спорное правило для Django
 ]
 
 fixable = ["ALL"]
@@ -411,17 +425,29 @@ unfixable = []
 [lint.per-file-ignores]
 # settings.py: допустимы "звёздочные" импорты и длинные строки конфигов,
 # а также hardcoded SECRET_KEY в примере/дев-настройках
-"*/settings/*.py" = ["E501", "F403", "F405", "S105", "S106"]
+"**/settings.py" = ["E501", "F403", "F405", "S105", "S106"]
+"**/settings/*.py" = ["E501", "F403", "F405", "S105", "S106"]
 
 # В тестах: assert — обычная практика pytest, hardcoded-пароли для фикстур — ок
 "tests/*.py" = ["S101", "S105", "S106", "S608", "PLR2004"]
 "*/test_*.py" = ["S101", "S105", "S106"]
 "conftest.py" = ["S101"]
 
+# Миграции: автогенерированный код
 "*/migrations/*.py" = ["E501", "N806"]
 
+# Админка и URLs: часто длинные строки
+"*/admin.py" = ["E501"]
+"*/urls.py" = ["E501"]
+
+# Команды управления: аргументы часто не используются (обязательный интерфейс)
+"*/management/commands/*.py" = ["ARG002"]
+
+# Стандартный manage.py: импорт внутри try/except и длинное сообщение об ошибке — норма
+"manage.py" = ["PLC0415", "TRY003"]
+
 [lint.isort]
-known-first-party = ["$PROJECT_NAME"]
+known-first-party = ["djcodebot"]
 section-order = [
     "future",
     "standard-library",
@@ -435,16 +461,15 @@ section-order = [
 django = ["django"]
 
 [lint.pep8-naming]
-classmethod-decorators = ["classmethod", "django.utils.decorators.classproperty"]
+classmethod-decorators = [
+    "classmethod",
+    "django.utils.decorators.classproperty",
+]
 
-# ---------- Настройка flake8-bandit (правила S) ----------
-[lint.flake8-bandit]
-# Разрешённые для использования без предупреждения функции хеширования
-# (например, если где-то нужен md5 не для паролей, а для чек-сумм файлов)
-hash-builtin-functions = []
-
-# Если в коде используете subprocess/os.system — можно разрешить
-# конкретные "безопасные" случаи через noqa с указанием кода, а не глобально
+[lint.mccabe]
+# Максимальная цикломатическая сложность функции.
+# Начните с 15, затем постепенно снижайте до 10.
+max-complexity = 15
 
 # ---------- Форматтер ----------
 [format]
@@ -453,6 +478,7 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "lf"
 docstring-code-format = true
+
 EOF
 }
 
