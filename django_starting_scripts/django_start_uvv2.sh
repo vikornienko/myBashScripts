@@ -511,23 +511,91 @@ ignore_errors = true
 EOF
 }
 
+# Function to setup pre-commit
+create_precommit() {
+    cat > .pre-commit-config.yaml << 'EOF'
+    # Конфигурация pre-commit для Django-проекта.
+#
+# Предполагается:
+# - проект работает в WSL2 Ubuntu 24.04;
+# - ruff и mypy установлены локально;
+# - настройки Ruff находятся в файле ruff.toml;
+# - настройки Mypy находятся в файле mypy.ini.
+#
+# Если вы используете uv-окружение проекта, хуки запускаются через `uv run`.
+# Это гарантирует, что будут использованы версии инструментов из окружения проекта.
+#
+# Если вы установили ruff и mypy глобально и они доступны в PATH без uv,
+# замените:
+#   uv run ruff ... -> ruff ...
+#   uv run mypy ... -> mypy ...
+
+fail_fast: false
+
+repos:
+  - repo: local
+    hooks:
+      # Проверка линтером с автоматическими исправлениями.
+      - id: ruff-check
+        name: Ruff check (auto-fix)
+        entry: uv run ruff check --config ruff.toml --fix --exit-non-zero-on-fix
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+      # Форматирование кода.
+      - id: ruff-format
+        name: Ruff format
+        entry: uv run ruff format --config ruff.toml
+        language: system
+        types_or: [python, pyi]
+        require_serial: true
+
+      # Проверка типов через mypy и django-stubs.
+      #
+      # pass_filenames: false важен для mypy:
+      # лучше проверять весь проект целиком, а не только изменённые файлы,
+      # так как Django-модели, формы, настройки и приложения связаны между собой.
+      - id: mypy
+        name: Mypy (Django)
+        entry: uv run mypy --config-file mypy.ini .
+        language: system
+        types_or: [python, pyi]
+        pass_filenames: false
+        require_serial: true
+
+        # Если для импорта настроек Django нужны переменные окружения,
+        # раскомментируйте и укажите нужные значения.
+        #
+        # Например:
+        #
+        # env:
+        #   DJANGO_SETTINGS_MODULE: config.settings
+        #   DEBUG: "1"
+        #   SECRET_KEY: "local-typecheck-only-key"
+EOF
+    }
+
 # Function to setup Django project
-# TODO: Добавить в функцию код для установки зависимостей
 setup_django_project() {
     local project_name="$PROJECT_NAME"
     
     echo "Adding Django dependency..."
     uv add django django-environ
-    uv add --dev mypy django-stubs django-stubs-ext ruff pytest pytest-django pytest-cov django-debug-toolbar
+    uv add --dev mypy django-stubs django-stubs-ext ruff pytest pytest-django pytest-cov django-debug-toolbar pre-commit
+    uv run pre-commit install
     
     echo "Creating Django project..."
     uv run django-admin startproject "$project_name"
 }
 
+# Function for first start project
+start_project() {
+    make rs
+}
+
 # TODO: Добавить создание документов для проекта
-# TODO: Добавить файл настройки pre-commit
 # TODO: Добавить директорию для тестов
-# TODO: Добавить функцию для установки зависимостей
 # TODO: Добавить функцию для старта сервера для проверки правильности установки
 # Main execution
 # TODO: переписать функцию в связи с новыми функциями и переменными
@@ -550,6 +618,7 @@ main() {
     create_makefile
     create_rufftomlfile
     create_mypyinifile
+    create_precommit
     setup_django_project
     start_project    
 }
