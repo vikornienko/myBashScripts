@@ -330,7 +330,7 @@ SHELL := /bin/bash
 .PHONY: rs mm mig csu sa rc rcf rf rfc rm rpc
 
 rs:
-	uv run $projet_name/manage.py runserver
+	uv run $project_name/manage.py runserver
 
 mm:
 	uv run $project_name/manage.py makemigrations
